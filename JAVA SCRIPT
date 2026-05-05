@@ -1,1 +1,165 @@
+// USERS
+function getUsers() {
+  return JSON.parse(localStorage.getItem("users")) || [];
+}
 
+function saveUsers(users) {
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+// SIGNUP
+function signup() {
+  const name = nameInput();
+  const email = emailInput();
+  const password = passwordInput();
+
+  if (!name || !email || !password) return alert("All fields required!");
+
+  let users = getUsers();
+
+  if (users.find(u => u.email === email)) {
+    return alert("User exists!");
+  }
+
+  users.push({ name, email, password });
+  saveUsers(users);
+
+  alert("Signup success!");
+  window.location.href = "login.html";
+}
+
+// LOGIN
+function login() {
+  const email = emailInput();
+  const password = passwordInput();
+
+  const user = getUsers().find(
+    u => u.email === email && u.password === password
+  );
+
+  if (!user) return alert("Invalid credentials!");
+
+  localStorage.setItem("loggedInUser", JSON.stringify(user));
+  window.location.href = "index.html";
+}
+
+// LOGOUT
+function logout() {
+  localStorage.removeItem("loggedInUser");
+  window.location.href = "login.html";
+}
+
+// AUTH
+function checkAuth() {
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (!user) window.location.href = "login.html";
+  else document.getElementById("welcomeUser").innerText = "Welcome, " + user.name;
+}
+
+// HELPERS
+const nameInput = () => document.getElementById("name")?.value.trim();
+const emailInput = () => document.getElementById("email")?.value.trim();
+const passwordInput = () => document.getElementById("password")?.value.trim();
+
+// TASKS
+function getTasks() {
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
+  return JSON.parse(localStorage.getItem("tasks_" + user.email)) || [];
+}
+
+function saveTasks(tasks) {
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
+  localStorage.setItem("tasks_" + user.email, JSON.stringify(tasks));
+}
+
+let currentFilter = "all";
+
+// LOAD
+window.onload = () => {
+  if (window.location.pathname.includes("index.html")) {
+    checkAuth();
+    displayTasks();
+  }
+};
+
+// ADD TASK
+function addTask() {
+  const input = document.getElementById("taskInput");
+  if (!input.value.trim()) return;
+
+  const tasks = getTasks();
+  tasks.push({ text: input.value, completed: false });
+
+  saveTasks(tasks);
+  input.value = "";
+  displayTasks();
+}
+
+// DISPLAY
+function displayTasks() {
+  const list = document.getElementById("taskList");
+  const counter = document.getElementById("taskCounter");
+
+  let tasks = getTasks();
+
+  if (currentFilter === "completed") tasks = tasks.filter(t => t.completed);
+  if (currentFilter === "pending") tasks = tasks.filter(t => !t.completed);
+
+  counter.innerText = "Tasks: " + tasks.length;
+  list.innerHTML = "";
+
+  tasks.forEach((task, index) => {
+    const li = document.createElement("li");
+
+    if (task.completed) li.classList.add("completed");
+
+    const span = document.createElement("span");
+    span.textContent = task.text;
+    span.onclick = () => toggleTask(index);
+
+    const edit = document.createElement("button");
+    edit.textContent = "Edit";
+    edit.onclick = () => {
+      const newText = prompt("Edit task:", task.text);
+      if (newText) updateTask(index, newText);
+    };
+
+    const del = document.createElement("button");
+    del.textContent = "Delete";
+    del.classList.add("delete-btn");
+    del.onclick = () => deleteTask(index);
+
+    li.append(span, edit, del);
+    list.appendChild(li);
+  });
+}
+
+// FILTER
+function filterTasks(type) {
+  currentFilter = type;
+  displayTasks();
+}
+
+// TOGGLE
+function toggleTask(i) {
+  const tasks = getTasks();
+  tasks[i].completed = !tasks[i].completed;
+  saveTasks(tasks);
+  displayTasks();
+}
+
+// UPDATE
+function updateTask(i, text) {
+  const tasks = getTasks();
+  tasks[i].text = text;
+  saveTasks(tasks);
+  displayTasks();
+}
+
+// DELETE
+function deleteTask(i) {
+  const tasks = getTasks();
+  tasks.splice(i, 1);
+  saveTasks(tasks);
+  displayTasks();
+}
