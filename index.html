@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="CSS/style.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+  <div class="sidebar">
+    <h2>Task Manager</h2>
+    <p id="welcomeUser"></p>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="main">
+    <h2>Your Tasks</h2>
+
+    <h3 id="taskCounter"></h3>
+
+    <div class="task-form">
+      <input type="text" id="taskInput" placeholder="Enter task">
+      <button onclick="addTask()">Add</button>
+    </div>
+
+    <div class="filters">
+      <button onclick="filterTasks('all')">All</button>
+      <button onclick="filterTasks('completed')">Completed</button>
+      <button onclick="filterTasks('pending')">Pending</button>
+    </div>
+
+    <ul id="taskList" class="task-list"></ul>
+  </div>
+
+</div>
+
+<script src="JAVA SCRIPT/script.js"></script>
+</body>
+</html>
